@@ -24,6 +24,7 @@ export default function MenuItemForm({ categories, onSave }: MenuItemFormProps) 
             price: Number(price),
             categoryId,
             isAvailable,
+            order: 0,
         });
 
         setName('');
