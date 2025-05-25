@@ -1,0 +1,32 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+    --foreground-rgb: 0, 0, 0;
+    --background-rgb: 255, 255, 255;
+}
+
+body {
+    color: rgb(var(--foreground-rgb));
+    background: rgb(var(--background-rgb));
+}
+
+@layer components {
+    .menu-item {
+        @apply transform transition-all duration-200 hover:scale-[1.02];
+    }
+
+    .category-title {
+        @apply relative inline-block;
+    }
+
+    .category-title::after {
+        content: '';
+        @apply absolute bottom-0 left-0 w-full h-1 bg-primary-500 transform scale-x-0 transition-transform duration-300;
+    }
+
+    .category-title:hover::after {
+        @apply scale-x-100;
+    }
+}
