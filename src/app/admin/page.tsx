@@ -382,71 +382,129 @@ export default function AdminPanel() {
                         </div>
                         {/* Modal de detalhes do pedido */}
                         {pedidoSelecionado && (
-                            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40" onClick={() => setPedidoSelecionado(null)}>
-                                <div className="bg-white rounded-xl shadow-xl p-8 max-w-md w-full relative print-pedido max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-                                    <button
+                            <motion.div 
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                transition={{ duration: 0.2 }}
+                                className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40" 
+                                onClick={() => setPedidoSelecionado(null)}
+                            >
+                                <motion.div 
+                                    initial={{ y: 20, opacity: 0 }}
+                                    animate={{ y: 0, opacity: 1 }}
+                                    exit={{ y: 20, opacity: 0 }}
+                                    transition={{ 
+                                        type: "spring",
+                                        stiffness: 300,
+                                        damping: 25
+                                    }}
+                                    className="bg-white rounded-xl shadow-xl p-4 sm:p-8 max-w-md w-[95%] sm:w-full relative print-pedido max-h-[90vh] overflow-y-auto" 
+                                    onClick={e => e.stopPropagation()}
+                                >
+                                    <motion.button
+                                        whileHover={{ scale: 1.1 }}
+                                        whileTap={{ scale: 0.9 }}
                                         className="absolute top-2 right-2 text-orange-500 hover:text-orange-700 text-2xl focus:outline-none no-print"
                                         onClick={() => setPedidoSelecionado(null)}
                                         aria-label="Fechar modal de pedido"
                                     >
                                         &times;
-                                    </button>
+                                    </motion.button>
                                     <div className="sticky top-0 bg-white pb-4 z-10">
-                                        <h2 className="text-xl font-bold mb-2 text-orange-600">Detalhes do Pedido</h2>
+                                        <h2 className="text-lg sm:text-xl font-bold mb-2 text-orange-600">Detalhes do Pedido</h2>
                                     </div>
-                                    <div className="mb-4 space-y-2">
-                                        <div className="border-b pb-2">
-                                            <h3 className="font-bold text-orange-600 mb-1">Informações do Cliente</h3>
+                                    <div className="mb-4 space-y-2 text-sm sm:text-base">
+                                        <motion.div 
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: 0.1 }}
+                                            className="border-b pb-2"
+                                        >
+                                            <h3 className="font-bold text-orange-600 mb-1 text-sm sm:text-base">Informações do Cliente</h3>
                                             <div><span className="font-semibold">Cliente:</span> {pedidoSelecionado.cliente}</div>
                                             <div><span className="font-semibold">Telefone:</span> {pedidoSelecionado.telefone || '(11) 99999-9999'}</div>
-                                        </div>
+                                        </motion.div>
 
-                                        <div className="border-b pb-2">
-                                            <h3 className="font-bold text-orange-600 mb-1">Endereço de Entrega</h3>
+                                        <motion.div 
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: 0.2 }}
+                                            className="border-b pb-2"
+                                        >
+                                            <h3 className="font-bold text-orange-600 mb-1 text-sm sm:text-base">Endereço de Entrega</h3>
                                             <div><span className="font-semibold">Rua:</span> {pedidoSelecionado.endereco?.rua || 'Rua Exemplo, 123'}</div>
                                             <div><span className="font-semibold">Bairro:</span> {pedidoSelecionado.endereco?.bairro || 'Centro'}</div>
                                             <div><span className="font-semibold">Complemento:</span> {pedidoSelecionado.endereco?.complemento || 'Apto 45'}</div>
                                             <div><span className="font-semibold">Referência:</span> {pedidoSelecionado.endereco?.referencia || 'Próximo ao mercado'}</div>
-                                        </div>
+                                        </motion.div>
 
-                                        <div className="border-b pb-2">
-                                            <h3 className="font-bold text-orange-600 mb-1">Itens do Pedido</h3>
+                                        <motion.div 
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: 0.3 }}
+                                            className="border-b pb-2"
+                                        >
+                                            <h3 className="font-bold text-orange-600 mb-1 text-sm sm:text-base">Itens do Pedido</h3>
                                             {pedidoSelecionado.itens?.map((item: any, index: number) => (
-                                                <div key={index} className="flex justify-between text-sm">
+                                                <motion.div 
+                                                    key={index}
+                                                    initial={{ opacity: 0, x: -10 }}
+                                                    animate={{ opacity: 1, x: 0 }}
+                                                    transition={{ delay: 0.4 + (index * 0.1) }}
+                                                    className="flex justify-between text-sm"
+                                                >
                                                     <span>{item.quantidade}x {item.nome}</span>
                                                     <span>R$ {item.preco.toFixed(2)}</span>
-                                                </div>
+                                                </motion.div>
                                             )) || (
-                                                <div className="text-sm">
+                                                <motion.div 
+                                                    initial={{ opacity: 0, x: -10 }}
+                                                    animate={{ opacity: 1, x: 0 }}
+                                                    transition={{ delay: 0.4 }}
+                                                    className="text-sm"
+                                                >
                                                     <div>1x Pizza Margherita - R$ 45,90</div>
                                                     <div>2x Coca-Cola 350ml - R$ 7,00</div>
-                                                </div>
+                                                </motion.div>
                                             )}
-                                        </div>
+                                        </motion.div>
 
-                                        <div className="border-b pb-2">
-                                            <h3 className="font-bold text-orange-600 mb-1">Valores</h3>
+                                        <motion.div 
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: 0.5 }}
+                                            className="border-b pb-2"
+                                        >
+                                            <h3 className="font-bold text-orange-600 mb-1 text-sm sm:text-base">Valores</h3>
                                             <div className="flex justify-between"><span>Subtotal:</span> <span>R$ {(pedidoSelecionado.total - deliveryFee).toFixed(2)}</span></div>
                                             <div className="flex justify-between"><span>Taxa de Entrega:</span> <span>R$ {deliveryFee.toFixed(2)}</span></div>
                                             <div className="flex justify-between font-bold"><span>Total:</span> <span>R$ {pedidoSelecionado.total.toFixed(2)}</span></div>
-                                        </div>
+                                        </motion.div>
 
-                                        <div className="border-b pb-2">
-                                            <h3 className="font-bold text-orange-600 mb-1">Informações do Pedido</h3>
+                                        <motion.div 
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: 0.6 }}
+                                            className="border-b pb-2"
+                                        >
+                                            <h3 className="font-bold text-orange-600 mb-1 text-sm sm:text-base">Informações do Pedido</h3>
                                             <div><span className="font-semibold">Status:</span> {pedidoSelecionado.status}</div>
                                             <div><span className="font-semibold">Horário:</span> {pedidoSelecionado.horario}</div>
                                             <div><span className="font-semibold">Forma de Pagamento:</span> {pedidoSelecionado.formaPagamento || 'Dinheiro'}</div>
                                             <div><span className="font-semibold">Observações:</span> {pedidoSelecionado.observacoes || 'Sem observações'}</div>
-                                        </div>
+                                        </motion.div>
                                     </div>
-                                    <button
+                                    <motion.button
+                                        whileHover={{ scale: 1.02 }}
+                                        whileTap={{ scale: 0.98 }}
                                         className="w-full bg-yellow-400 hover:bg-yellow-500 text-orange-900 font-bold py-2 rounded-lg transition-colors no-print"
                                         onClick={() => window.print()}
                                     >
                                         Imprimir
-                                    </button>
-                                </div>
-                            </div>
+                                    </motion.button>
+                                </motion.div>
+                            </motion.div>
                         )}
                     </div>
                 )}

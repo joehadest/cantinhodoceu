@@ -772,6 +772,9 @@ video {
 .w-\[80mm\] {
   width: 80mm;
 }
+.w-\[95\%\] {
+  width: 95%;
+}
 .min-w-full {
   min-width: 100%;
 }
@@ -1443,6 +1446,10 @@ body {
 
   .sm\:mb-6 {
     margin-bottom: 1.5rem;
+  }
+
+  .sm\:w-full {
+    width: 100%;
   }
 
   .sm\:max-w-sm {
