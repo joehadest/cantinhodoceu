@@ -292,7 +292,7 @@ export default function MenuDisplay() {
                                                             onClick={() => setSelectedItem(item)}
                                                         >
                                                             <div className="flex justify-between items-start mb-1 sm:mb-2">
-                                                                <h3 className="text-lg sm:text-xl font-semibold text-purple-700">
+                                                                <h3 className="text-lg sm:text-xl font-semibold text-orange-600">
                                                                     {item.name}
                                                                 </h3>
                                                                 <span className="text-base sm:text-lg font-bold text-orange-500">

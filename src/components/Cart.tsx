@@ -156,89 +156,89 @@ export default function Cart({ cart, onUpdateQuantity, onRemoveItem, onUpdateAdd
                 <AnimatePresence>
                     {isAddressFormOpen && (
                         <motion.div
-                            className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+                            className="fixed inset-0 bg-orange-100 bg-opacity-80 z-50 flex items-center justify-center p-4"
                             variants={addressFormVariants}
                             initial="hidden"
                             animate="visible"
                             exit="exit"
                         >
                             <motion.div
-                                className="bg-white rounded-xl max-w-md w-full p-6"
+                                className="bg-white rounded-2xl max-w-md w-full p-8 border-2 border-orange-400 shadow-xl relative"
                                 initial={{ opacity: 0, scale: 0.9 }}
                                 animate={{ opacity: 1, scale: 1 }}
                                 exit={{ opacity: 0, scale: 0.9 }}
                             >
-                                <h3 className="text-xl font-bold mb-4">Endereço de Entrega</h3>
+                                <h3 className="text-xl font-bold mb-4 text-orange-600">Endereço de Entrega</h3>
                                 <form onSubmit={handleAddressSubmit} className="space-y-4">
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700">CEP</label>
+                                        <label className="block text-sm font-medium text-orange-700">CEP</label>
                                         <input
                                             type="text"
                                             value={address.zipCode}
                                             onChange={(e) => setAddress({ ...address, zipCode: e.target.value })}
-                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                                            className="mt-1 block w-full rounded-md border-yellow-400 shadow-sm focus:border-orange-500 focus:ring-orange-500 bg-yellow-50 text-gray-900"
                                             required
                                         />
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700">Rua</label>
+                                            <label className="block text-sm font-medium text-orange-700">Rua</label>
                                             <input
                                                 type="text"
                                                 value={address.street}
                                                 onChange={(e) => setAddress({ ...address, street: e.target.value })}
-                                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                                                className="mt-1 block w-full rounded-md border-yellow-400 shadow-sm focus:border-orange-500 focus:ring-orange-500 bg-yellow-50 text-gray-900"
                                                 required
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700">Número</label>
+                                            <label className="block text-sm font-medium text-orange-700">Número</label>
                                             <input
                                                 type="text"
                                                 value={address.number}
                                                 onChange={(e) => setAddress({ ...address, number: e.target.value })}
-                                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                                                className="mt-1 block w-full rounded-md border-yellow-400 shadow-sm focus:border-orange-500 focus:ring-orange-500 bg-yellow-50 text-gray-900"
                                                 required
                                             />
                                         </div>
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700">Complemento</label>
+                                        <label className="block text-sm font-medium text-orange-700">Complemento</label>
                                         <input
                                             type="text"
                                             value={address.complement}
                                             onChange={(e) => setAddress({ ...address, complement: e.target.value })}
-                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                                            className="mt-1 block w-full rounded-md border-yellow-400 shadow-sm focus:border-orange-500 focus:ring-orange-500 bg-yellow-50 text-gray-900"
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700">Bairro</label>
+                                        <label className="block text-sm font-medium text-orange-700">Bairro</label>
                                         <input
                                             type="text"
                                             value={address.neighborhood}
                                             onChange={(e) => setAddress({ ...address, neighborhood: e.target.value })}
-                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                                            className="mt-1 block w-full rounded-md border-yellow-400 shadow-sm focus:border-orange-500 focus:ring-orange-500 bg-yellow-50 text-gray-900"
                                             required
                                         />
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700">Cidade</label>
+                                            <label className="block text-sm font-medium text-orange-700">Cidade</label>
                                             <input
                                                 type="text"
                                                 value={address.city}
                                                 onChange={(e) => setAddress({ ...address, city: e.target.value })}
-                                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                                                className="mt-1 block w-full rounded-md border-yellow-400 shadow-sm focus:border-orange-500 focus:ring-orange-500 bg-yellow-50 text-gray-900"
                                                 required
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700">Estado</label>
+                                            <label className="block text-sm font-medium text-orange-700">Estado</label>
                                             <input
                                                 type="text"
                                                 value={address.state}
                                                 onChange={(e) => setAddress({ ...address, state: e.target.value })}
-                                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                                                className="mt-1 block w-full rounded-md border-yellow-400 shadow-sm focus:border-orange-500 focus:ring-orange-500 bg-yellow-50 text-gray-900"
                                                 required
                                             />
                                         </div>
@@ -247,13 +247,13 @@ export default function Cart({ cart, onUpdateQuantity, onRemoveItem, onUpdateAdd
                                         <button
                                             type="button"
                                             onClick={() => setIsAddressFormOpen(false)}
-                                            className="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors"
+                                            className="flex-1 bg-yellow-200 text-orange-700 py-2 px-4 rounded-lg hover:bg-yellow-300 transition-colors"
                                         >
                                             Cancelar
                                         </button>
                                         <button
                                             type="submit"
-                                            className="flex-1 bg-primary-600 text-white py-2 px-4 rounded-lg hover:bg-primary-700 transition-colors"
+                                            className="flex-1 bg-orange-500 text-white py-2 px-4 rounded-lg hover:bg-orange-600 transition-colors"
                                         >
                                             Salvar
                                         </button>

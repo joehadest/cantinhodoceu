@@ -19,7 +19,7 @@ export default function RootLayout({
 }) {
     return (
         <html lang="pt-BR">
-            <body className={inter.className + ' text-orange-600'}>
+            <body className={inter.className + ' text-gray-900'}>
                 <MenuProvider>
                     <StoreProvider>
                         <Header />
