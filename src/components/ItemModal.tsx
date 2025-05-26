@@ -70,19 +70,19 @@ export default function ItemModal({ item, isOpen, onClose, onAddToCart }: ItemMo
                         onClick={(e) => e.stopPropagation()}
                     >
                         <div className="flex justify-between items-start mb-4">
-                            <h2 className="text-2xl font-bold text-gray-900">{item.name}</h2>
+                            <h2 className="text-2xl font-bold text-orange-600">{item.name}</h2>
                             <motion.button
                                 whileHover={{ scale: 1.1 }}
                                 whileTap={{ scale: 0.9 }}
                                 onClick={onClose}
-                                className="text-gray-500 hover:text-gray-700"
+                                className="text-orange-500 hover:text-orange-600"
                             >
                                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                 </svg>
                             </motion.button>
                         </div>
-                        <p className="text-gray-600 mb-6">{item.description}</p>
+                        <p className="text-yellow-700 mb-6">{item.description}</p>
                         <div className="flex items-center justify-between mb-6">
                             <div className="flex items-center space-x-4">
                                 <motion.button
@@ -103,7 +103,7 @@ export default function ItemModal({ item, isOpen, onClose, onAddToCart }: ItemMo
                                     +
                                 </motion.button>
                             </div>
-                            <span className="text-2xl font-bold text-gray-900">
+                            <span className="text-2xl font-bold text-orange-600">
                                 R$ {(item.price * quantity).toFixed(2)}
                             </span>
                         </div>
@@ -111,7 +111,7 @@ export default function ItemModal({ item, isOpen, onClose, onAddToCart }: ItemMo
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
                             onClick={() => onAddToCart(quantity)}
-                            className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+                            className="w-full bg-orange-500 text-white py-3 rounded-lg font-semibold hover:bg-red-500 transition-colors mt-4"
                         >
                             Adicionar ao Carrinho
                         </motion.button>

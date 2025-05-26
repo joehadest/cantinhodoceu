@@ -65,10 +65,10 @@ export default function Cart({ cart, onUpdateQuantity, onRemoveItem, onUpdateAdd
                 exit="exit"
                 className="bg-white rounded-xl shadow-lg p-6"
             >
-                <h2 className="text-2xl font-bold mb-6">Carrinho</h2>
+                <h2 className="text-2xl font-bold mb-6 text-orange-600">Carrinho</h2>
 
                 {cart.items.length === 0 ? (
-                    <p className="text-gray-500 text-center py-4">Seu carrinho está vazio</p>
+                    <p className="text-yellow-600 text-center py-4">Seu carrinho está vazio</p>
                 ) : (
                     <>
                         <div className="space-y-4 mb-6">
@@ -118,18 +118,18 @@ export default function Cart({ cart, onUpdateQuantity, onRemoveItem, onUpdateAdd
                         </div>
 
                         <div className="space-y-2 mb-6">
-                            <div className="flex justify-between text-gray-600">
+                            <div className="flex justify-between text-orange-600">
                                 <span>Subtotal</span>
                                 <span>R$ {cart.subtotal.toFixed(2)}</span>
                             </div>
-                            <div className="flex justify-between text-gray-600">
+                            <div className="flex justify-between text-orange-600">
                                 <span>Taxa de entrega</span>
                                 <span>R$ {deliveryFee.toFixed(2)}</span>
                             </div>
-                            <div className="text-sm text-gray-500">
+                            <div className="text-sm text-orange-500">
                                 Tempo estimado: {cart.deliveryInfo?.estimatedTime}
                             </div>
-                            <div className="flex justify-between font-bold text-lg pt-2 border-t">
+                            <div className="flex justify-between font-bold text-lg pt-2 border-t text-orange-700">
                                 <span>Total</span>
                                 <span>R$ {(cart.subtotal + deliveryFee).toFixed(2)}</span>
                             </div>
@@ -138,14 +138,14 @@ export default function Cart({ cart, onUpdateQuantity, onRemoveItem, onUpdateAdd
                         {!cart.deliveryInfo ? (
                             <button
                                 onClick={() => setIsAddressFormOpen(true)}
-                                className="w-full bg-primary-600 text-white py-3 px-4 rounded-lg hover:bg-primary-700 transition-colors"
+                                className="w-full bg-orange-500 hover:bg-red-500 text-white py-3 px-4 rounded-lg font-semibold transition-colors mt-4"
                             >
                                 Adicionar Endereço de Entrega
                             </button>
                         ) : (
                             <button
                                 onClick={onCheckout}
-                                className="w-full bg-primary-600 text-white py-3 px-4 rounded-lg hover:bg-primary-700 transition-colors"
+                                className="w-full bg-orange-500 hover:bg-red-500 text-white py-3 px-4 rounded-lg font-semibold transition-colors mt-4"
                             >
                                 Finalizar Pedido
                             </button>

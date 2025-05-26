@@ -1,11 +1,13 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Category, MenuItem } from '@/types/menu';
 import { Cart, CartItem, Address } from '@/types/cart';
 import ItemModal from './ItemModal';
 import CartComponent from './Cart';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaShoppingCart } from 'react-icons/fa';
+import { FaChevronDown } from 'react-icons/fa';
+import { useMenu } from '@/contexts/MenuContext';
 
 interface MenuDisplayProps {
     categories: Category[];
@@ -61,7 +63,8 @@ const subtitleAnimation = {
     }
 };
 
-export default function MenuDisplay({ categories, items }: MenuDisplayProps) {
+export default function MenuDisplay() {
+    const { categories, items } = useMenu();
     const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
     const [cart, setCart] = useState<Cart>({
         items: [],
@@ -69,6 +72,22 @@ export default function MenuDisplay({ categories, items }: MenuDisplayProps) {
         total: 0,
     });
     const [cartMinimized, setCartMinimized] = useState(true);
+    const [expandedCategories, setExpandedCategories] = useState<{ [key: string]: boolean }>({});
+
+    useEffect(() => {
+        const initialExpandedState = categories.reduce((acc, category) => {
+            acc[category.id] = false;
+            return acc;
+        }, {} as { [key: string]: boolean });
+        setExpandedCategories(initialExpandedState);
+    }, [categories]);
+
+    const toggleCategory = (categoryId: string) => {
+        setExpandedCategories(prev => ({
+            ...prev,
+            [categoryId]: !prev[categoryId]
+        }));
+    };
 
     const handleAddToCart = (item: MenuItem, quantity: number) => {
         const existingItem = cart.items.find((cartItem) => cartItem.item.id === item.id);
@@ -165,85 +184,139 @@ export default function MenuDisplay({ categories, items }: MenuDisplayProps) {
 
     const sortedCategories = [...categories].sort((a, b) => a.order - b.order);
 
+    // Debug: logar categorias e itens
+    console.log('Categorias:', categories);
+    console.log('Itens:', items);
+
     return (
         <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-8">
             <motion.div
                 variants={container}
                 initial="hidden"
                 animate="show"
-                className="space-y-8 sm:space-y-12"
+                className="space-y-4 sm:space-y-6"
             >
                 {sortedCategories.map((category) => {
                     const categoryItems = items
                         .filter((item) => item.categoryId === category.id)
                         .sort((a, b) => a.order - b.order);
 
-                    if (categoryItems.length === 0) return null;
+                    // Log para debug
+                    console.log(`Categoria: ${category.name} (${category.id}) - Itens:`, categoryItems);
+
+                    if (categoryItems.length === 0) return (
+                        <motion.section
+                            key={category.id}
+                            variants={itemAnimation}
+                            className="bg-white rounded-xl shadow-lg overflow-hidden"
+                        >
+                            <button
+                                onClick={() => toggleCategory(category.id)}
+                                className="w-full p-4 sm:p-6 flex justify-between items-center hover:bg-orange-100 transition-colors"
+                            >
+                                <motion.h2
+                                    initial={{ opacity: 0, x: -20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    className="text-2xl sm:text-3xl font-bold text-orange-600"
+                                >
+                                    {category.name}
+                                </motion.h2>
+                                <motion.div
+                                    animate={{ rotate: expandedCategories[category.id] ? 180 : 0 }}
+                                    transition={{ duration: 0.3 }}
+                                    className="flex items-center"
+                                >
+                                    <FaChevronDown className="text-gray-500 text-xl" />
+                                </motion.div>
+                            </button>
+                            <AnimatePresence>
+                                {expandedCategories[category.id] && (
+                                    <motion.div
+                                        initial={{ height: 0, opacity: 0 }}
+                                        animate={{ height: "auto", opacity: 1 }}
+                                        exit={{ height: 0, opacity: 0 }}
+                                        transition={{ duration: 0.3 }}
+                                        className="overflow-hidden"
+                                    >
+                                        <div className="p-4 sm:p-6 pt-0 text-gray-500 text-center">
+                                            Nenhum item nesta categoria.
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </motion.section>
+                    );
 
                     return (
                         <motion.section
                             key={category.id}
                             variants={itemAnimation}
-                            className="bg-white rounded-xl shadow-lg p-4 sm:p-6"
+                            className="bg-white rounded-xl shadow-lg overflow-hidden"
                         >
-                            <motion.h2
-                                initial={{ opacity: 0, x: -20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4 sm:mb-6"
+                            <button
+                                onClick={() => toggleCategory(category.id)}
+                                className="w-full p-4 sm:p-6 flex justify-between items-center hover:bg-orange-100 transition-colors"
                             >
-                                {category.name}
-                            </motion.h2>
-                            <motion.div
-                                variants={container}
-                                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6"
-                            >
-                                <AnimatePresence>
-                                    {categoryItems.map((item) => (
-                                        <motion.div
-                                            key={item.id}
-                                            variants={itemAnimation}
-                                            whileHover={{ scale: 1.02 }}
-                                            whileTap={{ scale: 0.98 }}
-                                            onClick={() => setSelectedItem(item)}
-                                            className={`bg-gray-50 rounded-lg p-3 sm:p-4 cursor-pointer ${!item.isAvailable ? 'opacity-50' : ''}`}
-                                        >
-                                            <div className="flex justify-between items-start mb-1 sm:mb-2">
-                                                <motion.h3
-                                                    initial={{ opacity: 0 }}
-                                                    animate={{ opacity: 1 }}
-                                                    className="text-lg sm:text-xl font-semibold text-gray-900"
-                                                >
-                                                    {item.name}
-                                                </motion.h3>
-                                                <motion.span
-                                                    initial={{ opacity: 0, scale: 0.5 }}
-                                                    animate={{ opacity: 1, scale: 1 }}
-                                                    className="text-base sm:text-lg font-bold text-gray-900"
-                                                >
-                                                    R$ {item.price.toFixed(2)}
-                                                </motion.span>
-                                            </div>
-                                            <motion.p
-                                                initial={{ opacity: 0 }}
-                                                animate={{ opacity: 1 }}
-                                                transition={{ delay: 0.2 }}
-                                                className="text-gray-600 mb-2 sm:mb-4 text-sm sm:text-base"
-                                            >
-                                                {item.description}
-                                            </motion.p>
-                                            {!item.isAvailable && (
-                                                <motion.div
-                                                    initial={{ opacity: 0 }}
-                                                    animate={{ opacity: 1 }}
-                                                    className="text-red-500 text-xs sm:text-sm font-medium"
-                                                >
-                                                    Indisponível
-                                                </motion.div>
+                                <motion.h2
+                                    initial={{ opacity: 0, x: -20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    className="text-2xl sm:text-3xl font-bold text-orange-600"
+                                >
+                                    {category.name}
+                                </motion.h2>
+                                <motion.div
+                                    animate={{ rotate: expandedCategories[category.id] ? 180 : 0 }}
+                                    transition={{ duration: 0.3 }}
+                                    className="flex items-center"
+                                >
+                                    <FaChevronDown className="text-gray-500 text-xl" />
+                                </motion.div>
+                            </button>
+                            
+                            <AnimatePresence>
+                                {expandedCategories[category.id] && (
+                                    <motion.div
+                                        initial={{ height: 0, opacity: 0 }}
+                                        animate={{ height: "auto", opacity: 1 }}
+                                        exit={{ height: 0, opacity: 0 }}
+                                        transition={{ duration: 0.3 }}
+                                        className="overflow-hidden"
+                                    >
+                                        <div className="p-4 sm:p-6 pt-0">
+                                            {categoryItems.length > 0 ? (
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6 sm:gap-8">
+                                                    {categoryItems.map((item) => (
+                                                        <div
+                                                            key={item.id}
+                                                            className="bg-orange-50 rounded-lg p-5 sm:p-6 border border-orange-200 hover:border-orange-400 transition-colors cursor-pointer"
+                                                            onClick={() => setSelectedItem(item)}
+                                                        >
+                                                            <div className="flex justify-between items-start mb-1 sm:mb-2">
+                                                                <h3 className="text-lg sm:text-xl font-semibold text-purple-700">
+                                                                    {item.name}
+                                                                </h3>
+                                                                <span className="text-base sm:text-lg font-bold text-orange-500">
+                                                                    R$ {item.price.toFixed(2)}
+                                                                </span>
+                                                            </div>
+                                                            <p className="text-yellow-700 mb-2 sm:mb-4 text-sm sm:text-base">
+                                                                {item.description}
+                                                            </p>
+                                                            {!item.isAvailable && (
+                                                                <div className="text-red-500 text-xs sm:text-sm font-medium">
+                                                                    Indisponível
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <div className="text-gray-500 text-center">Nenhum item nesta categoria.</div>
                                             )}
-                                        </motion.div>
-                                    ))}
-                                </AnimatePresence>
-                            </motion.div>
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
                         </motion.section>
                     );
                 })}
@@ -253,13 +326,13 @@ export default function MenuDisplay({ categories, items }: MenuDisplayProps) {
             <div>
                 {cartMinimized ? (
                     <button
-                        className="fixed bottom-4 right-4 z-50 bg-blue-600 text-white rounded-full shadow-lg p-4 flex items-center justify-center focus:outline-none"
+                        className="fixed bottom-4 right-4 z-50 bg-orange-500 text-white rounded-full shadow-lg p-4 flex items-center justify-center focus:outline-none"
                         onClick={() => setCartMinimized(false)}
                         aria-label="Expandir carrinho"
                     >
-                        <FaShoppingCart size={28} />
+                        <FaShoppingCart size={28} className="text-white" />
                         {cart.items.length > 0 && (
-                            <span className="ml-2 bg-white text-blue-600 rounded-full px-2 py-0.5 text-xs font-bold">
+                            <span className="ml-2 bg-white text-orange-600 rounded-full px-2 py-0.5 text-xs font-bold">
                                 {cart.items.length}
                             </span>
                         )}

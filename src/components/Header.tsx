@@ -2,6 +2,7 @@
 import React from 'react';
 import { useStore } from '@/contexts/StoreContext';
 import { motion } from 'framer-motion';
+import { FaPizzaSlice } from 'react-icons/fa';
 
 export default function Header() {
     const { isOpen } = useStore();
@@ -21,7 +22,8 @@ export default function Header() {
                         transition={{ delay: 0.2 }}
                         className="flex items-center"
                     >
-                        <h1 className="text-2xl font-bold text-gray-900">Cantinho do Céu</h1>
+                        <FaPizzaSlice className="text-orange-500 w-7 h-7 mr-2 drop-shadow" />
+                        <h1 className="text-2xl font-bold text-orange-600 drop-shadow-sm">Pappardelle Pizzaria e Pastelaria</h1>
                     </motion.div>
                     <motion.div
                         initial={{ opacity: 0, x: 20 }}
