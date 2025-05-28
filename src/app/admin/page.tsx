@@ -53,7 +53,7 @@ export default function AdminPanel() {
             });
             const data = await res.json();
             if (data.success) {
-                setSaveMessage('Alterações salvas com sucesso!');
+            setSaveMessage('Alterações salvas com sucesso!');
             } else {
                 setSaveMessage('Erro ao salvar alterações.');
             }
