@@ -73,14 +73,34 @@ export default function MenuDisplay() {
     });
     const [cartMinimized, setCartMinimized] = useState(true);
     const [expandedCategories, setExpandedCategories] = useState<{ [key: string]: boolean }>({});
+    const [isOpen, setIsOpen] = useState(true);
 
     useEffect(() => {
-        const initialExpandedState = categories.reduce((acc, category) => {
-            acc[category.id] = false;
-            return acc;
-        }, {} as { [key: string]: boolean });
-        setExpandedCategories(initialExpandedState);
-    }, [categories]);
+        console.log('MenuDisplay - Categorias:', categories);
+        console.log('MenuDisplay - Itens:', items);
+        
+        if (categories.length > 0) {
+            const initialExpandedState = categories.reduce((acc, category) => {
+                acc[category.id] = true;
+                return acc;
+            }, {} as { [key: string]: boolean });
+            setExpandedCategories(initialExpandedState);
+        }
+
+        // Buscar status do restaurante
+        async function fetchStatus() {
+            try {
+                const res = await fetch('/api/settings');
+                const data = await res.json();
+                if (data.success && data.data) {
+                    setIsOpen(data.data.isOpen ?? true);
+                }
+            } catch (err) {
+                setIsOpen(true); // fallback: aberto
+            }
+        }
+        fetchStatus();
+    }, []);
 
     const toggleCategory = (categoryId: string) => {
         setExpandedCategories(prev => ({
@@ -179,6 +199,7 @@ export default function MenuDisplay() {
             items: [],
             subtotal: 0,
             total: 0,
+            deliveryInfo: undefined,
         });
     };
 
@@ -190,136 +211,90 @@ export default function MenuDisplay() {
 
     return (
         <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-8">
+            {!isOpen && (
+                <div className="mb-6 p-4 bg-red-100 border border-red-300 text-red-800 rounded text-center font-bold text-xl">
+                    O restaurante está fechado no momento. Volte mais tarde!
+                </div>
+            )}
             <motion.div
                 variants={container}
                 initial="hidden"
                 animate="show"
                 className="space-y-4 sm:space-y-6"
+                style={!isOpen ? { pointerEvents: 'none', opacity: 0.5 } : {}}
             >
-                {sortedCategories.map((category) => {
-                    const categoryItems = items
-                        .filter((item) => item.categoryId === category.id)
-                        .sort((a, b) => a.order - b.order);
+                {!categories || categories.length === 0 ? (
+                    <div className="text-center text-gray-500 py-8">
+                        <p className="text-xl font-semibold mb-2">Carregando cardápio...</p>
+                        <p className="text-sm">Por favor, aguarde um momento.</p>
+                    </div>
+                ) : (
+                    categories.map((category) => {
+                        const categoryItems = items.filter((item) => item.categoryId === category.id);
+                        console.log('Itens disponíveis:', items);
+                        console.log('Procurando itens da categoria', category.name, 'com id', category.id);
+                        console.log(`Renderizando categoria ${category.name}:`, categoryItems);
 
-                    // Log para debug
-                    console.log(`Categoria: ${category.name} (${category.id}) - Itens:`, categoryItems);
-
-                    if (categoryItems.length === 0) return (
-                        <motion.section
-                            key={category.id}
-                            variants={itemAnimation}
-                            className="bg-white rounded-xl shadow-lg overflow-hidden"
-                        >
-                            <button
-                                onClick={() => toggleCategory(category.id)}
-                                className="w-full p-4 sm:p-6 flex justify-between items-center hover:bg-orange-100 transition-colors"
+                        return (
+                            <motion.section
+                                key={category.id}
+                                variants={itemAnimation}
+                                className="bg-white rounded-xl shadow-lg overflow-hidden"
                             >
-                                <motion.h2
-                                    initial={{ opacity: 0, x: -20 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    className="text-2xl sm:text-3xl font-bold text-orange-600"
+                                <button
+                                    onClick={() => toggleCategory(category.id)}
+                                    className="w-full p-4 sm:p-6 flex justify-between items-center hover:bg-orange-100 transition-colors"
                                 >
-                                    {category.name}
-                                </motion.h2>
-                                <motion.div
-                                    animate={{ rotate: expandedCategories[category.id] ? 180 : 0 }}
-                                    transition={{ duration: 0.3 }}
-                                    className="flex items-center"
-                                >
-                                    <FaChevronDown className="text-gray-500 text-xl" />
-                                </motion.div>
-                            </button>
-                            <AnimatePresence>
-                                {expandedCategories[category.id] && (
-                                    <motion.div
-                                        initial={{ height: 0, opacity: 0 }}
-                                        animate={{ height: "auto", opacity: 1 }}
-                                        exit={{ height: 0, opacity: 0 }}
-                                        transition={{ duration: 0.3 }}
-                                        className="overflow-hidden"
+                                    <motion.h2
+                                        initial={{ opacity: 0, x: -20 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        className="text-2xl sm:text-3xl font-bold text-orange-600"
                                     >
-                                        <div className="p-4 sm:p-6 pt-0 text-gray-500 text-center">
-                                            Nenhum item nesta categoria.
-                                        </div>
+                                        {category.name}
+                                    </motion.h2>
+                                    <motion.div
+                                        animate={{ rotate: expandedCategories[category.id] ? 180 : 0 }}
+                                        transition={{ duration: 0.3 }}
+                                        className="flex items-center"
+                                    >
+                                        <FaChevronDown className="text-gray-500 text-xl" />
                                     </motion.div>
-                                )}
-                            </AnimatePresence>
-                        </motion.section>
-                    );
-
-                    return (
-                        <motion.section
-                            key={category.id}
-                            variants={itemAnimation}
-                            className="bg-white rounded-xl shadow-lg overflow-hidden"
-                        >
-                            <button
-                                onClick={() => toggleCategory(category.id)}
-                                className="w-full p-4 sm:p-6 flex justify-between items-center hover:bg-orange-100 transition-colors"
-                            >
-                                <motion.h2
-                                    initial={{ opacity: 0, x: -20 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    className="text-2xl sm:text-3xl font-bold text-orange-600"
-                                >
-                                    {category.name}
-                                </motion.h2>
-                                <motion.div
-                                    animate={{ rotate: expandedCategories[category.id] ? 180 : 0 }}
-                                    transition={{ duration: 0.3 }}
-                                    className="flex items-center"
-                                >
-                                    <FaChevronDown className="text-gray-500 text-xl" />
-                                </motion.div>
-                            </button>
-                            
-                            <AnimatePresence>
-                                {expandedCategories[category.id] && (
-                                    <motion.div
-                                        initial={{ height: 0, opacity: 0 }}
-                                        animate={{ height: "auto", opacity: 1 }}
-                                        exit={{ height: 0, opacity: 0 }}
-                                        transition={{ duration: 0.3 }}
-                                        className="overflow-hidden"
-                                    >
-                                        <div className="p-4 sm:p-6 pt-0">
-                                            {categoryItems.length > 0 ? (
-                                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6 sm:gap-8">
+                                </button>
+                                <AnimatePresence>
+                                    {expandedCategories[category.id] && (
+                                        <motion.div
+                                            initial={{ height: 0, opacity: 0 }}
+                                            animate={{ height: "auto", opacity: 1 }}
+                                            exit={{ height: 0, opacity: 0 }}
+                                            transition={{ duration: 0.3 }}
+                                            className="overflow-hidden"
+                                        >
+                                            {categoryItems.length === 0 ? (
+                                                <div className="p-4 sm:p-6 pt-0 text-gray-500 text-center">
+                                                    Nenhum item nesta categoria.
+                                                </div>
+                                            ) : (
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-4 sm:p-6 pt-0">
                                                     {categoryItems.map((item) => (
                                                         <div
                                                             key={item.id}
-                                                            className="bg-orange-50 rounded-lg p-5 sm:p-6 border border-orange-200 hover:border-orange-400 transition-colors cursor-pointer"
+                                                            className="bg-white rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow cursor-pointer"
                                                             onClick={() => setSelectedItem(item)}
                                                         >
-                                                            <div className="flex justify-between items-start mb-1 sm:mb-2">
-                                                                <h3 className="text-lg sm:text-xl font-semibold text-orange-600">
-                                                                    {item.name}
-                                                                </h3>
-                                                                <span className="text-base sm:text-lg font-bold text-orange-500">
-                                                                    R$ {item.price.toFixed(2)}
-                                                                </span>
-                                                            </div>
-                                                            <p className="text-yellow-700 mb-2 sm:mb-4 text-sm sm:text-base">
-                                                                {item.description}
-                                                            </p>
-                                                            {!item.isAvailable && (
-                                                                <div className="text-red-500 text-xs sm:text-sm font-medium">
-                                                                    Indisponível
-                                                                </div>
-                                                            )}
+                                                            <h3 className="font-semibold text-lg text-gray-900">{item.name}</h3>
+                                                            <p className="text-gray-600 text-sm mt-1">{item.description}</p>
+                                                            <p className="text-orange-600 font-semibold mt-2">R$ {item.price.toFixed(2)}</p>
                                                         </div>
                                                     ))}
                                                 </div>
-                                            ) : (
-                                                <div className="text-gray-500 text-center">Nenhum item nesta categoria.</div>
                                             )}
-                                        </div>
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
-                        </motion.section>
-                    );
-                })}
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </motion.section>
+                        );
+                    })
+                )}
             </motion.div>
 
             {/* Carrinho flutuante em todas as telas */}

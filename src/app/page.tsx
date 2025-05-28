@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import MenuDisplay from '@/components/MenuDisplay';
+import MenuDisplay from '../components/MenuDisplay';
 import { motion } from 'framer-motion';
 
 export default function Home() {

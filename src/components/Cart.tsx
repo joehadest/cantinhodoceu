@@ -13,6 +13,7 @@ interface CartProps {
 
 export default function Cart({ cart, onUpdateQuantity, onRemoveItem, onUpdateAddress, onCheckout }: CartProps) {
     const [isAddressFormOpen, setIsAddressFormOpen] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
     const [address, setAddress] = useState<Address>({
         street: '',
         number: '',
@@ -23,6 +24,10 @@ export default function Cart({ cart, onUpdateQuantity, onRemoveItem, onUpdateAdd
         zipCode: '',
     });
     const [deliveryFee, setDeliveryFee] = useState(0);
+    const [mensagem, setMensagem] = useState<string | null>(null);
+    const [cliente, setCliente] = useState({ nome: '', telefone: '' });
+    const [formaPagamento, setFormaPagamento] = useState('');
+    const [observacoes, setObservacoes] = useState('');
 
     useEffect(() => {
         if (typeof window !== 'undefined') {
@@ -35,6 +40,46 @@ export default function Cart({ cart, onUpdateQuantity, onRemoveItem, onUpdateAdd
         e.preventDefault();
         onUpdateAddress(address);
         setIsAddressFormOpen(false);
+    };
+
+    const handleCheckout = async () => {
+        try {
+            setIsLoading(true);
+            setMensagem(null);
+            const pedidoData = {
+                itens: cart.items.map(item => ({
+                    nome: item.item.name,
+                    quantidade: item.quantity,
+                    preco: item.item.price,
+                    observacao: item.observations || ''
+                })),
+                total: cart.subtotal + deliveryFee,
+                endereco: cart.deliveryInfo,
+                cliente,
+                formaPagamento,
+                observacoes
+            };
+
+            const response = await fetch('/api/pedidos', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(pedidoData),
+            });
+
+            if (!response.ok) {
+                throw new Error('Erro ao salvar o pedido');
+            }
+
+            const result = await response.json();
+            setMensagem(result.message || 'Pedido enviado com sucesso!');
+            onCheckout();
+        } catch (error) {
+            setMensagem('Erro ao finalizar pedido. Por favor, tente novamente.');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const cartVariants = {
@@ -63,7 +108,7 @@ export default function Cart({ cart, onUpdateQuantity, onRemoveItem, onUpdateAdd
                 initial="hidden"
                 animate="visible"
                 exit="exit"
-                className="bg-white rounded-xl shadow-lg p-6"
+                className="bg-white rounded-xl shadow-lg p-6 max-h-[80vh] overflow-y-auto"
             >
                 <h2 className="text-2xl font-bold mb-6 text-orange-600">Carrinho</h2>
 
@@ -135,6 +180,62 @@ export default function Cart({ cart, onUpdateQuantity, onRemoveItem, onUpdateAdd
                             </div>
                         </div>
 
+                        {/* Campos de cliente, pagamento e observações */}
+                        <div className="mb-4 space-y-2">
+                            <div>
+                                <label className="block text-sm font-medium text-orange-700">Nome do Cliente</label>
+                                <input
+                                    type="text"
+                                    value={cliente.nome}
+                                    onChange={e => setCliente({ ...cliente, nome: e.target.value })}
+                                    className="mt-1 block w-full rounded-md border-yellow-400 shadow-sm focus:border-orange-500 focus:ring-orange-500 bg-yellow-50 text-gray-900"
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-orange-700">Telefone</label>
+                                <input
+                                    type="tel"
+                                    value={cliente.telefone}
+                                    onChange={e => setCliente({ ...cliente, telefone: e.target.value })}
+                                    className="mt-1 block w-full rounded-md border-yellow-400 shadow-sm focus:border-orange-500 focus:ring-orange-500 bg-yellow-50 text-gray-900"
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-orange-700">Forma de Pagamento</label>
+                                <select
+                                    value={formaPagamento}
+                                    onChange={e => setFormaPagamento(e.target.value)}
+                                    className="mt-1 block w-full rounded-md border-yellow-400 shadow-sm focus:border-orange-500 focus:ring-orange-500 bg-yellow-50 text-gray-900"
+                                    required
+                                >
+                                    <option value="">Selecione</option>
+                                    <option value="Dinheiro">Dinheiro</option>
+                                    <option value="Cartão de Crédito">Cartão de Crédito</option>
+                                    <option value="Cartão de Débito">Cartão de Débito</option>
+                                    <option value="Pix">Pix</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-orange-700">Observações</label>
+                                <textarea
+                                    value={observacoes}
+                                    onChange={e => setObservacoes(e.target.value)}
+                                    className="mt-1 block w-full rounded-md border-yellow-400 shadow-sm focus:border-orange-500 focus:ring-orange-500 bg-yellow-50 text-gray-900"
+                                    rows={2}
+                                    placeholder="Ex: Sem cebola, troco para 50, etc."
+                                />
+                            </div>
+                        </div>
+
+                        {/* Mensagem de sucesso/erro */}
+                        {mensagem && (
+                            <div className="mb-4 p-4 rounded-lg bg-green-100 border border-green-300 text-green-800 text-center font-semibold shadow">
+                                {mensagem}
+                            </div>
+                        )}
+
                         {!cart.deliveryInfo ? (
                             <button
                                 onClick={() => setIsAddressFormOpen(true)}
@@ -144,10 +245,11 @@ export default function Cart({ cart, onUpdateQuantity, onRemoveItem, onUpdateAdd
                             </button>
                         ) : (
                             <button
-                                onClick={onCheckout}
-                                className="w-full bg-orange-500 hover:bg-red-500 text-white py-3 px-4 rounded-lg font-semibold transition-colors mt-4"
+                                onClick={handleCheckout}
+                                disabled={isLoading}
+                                className={`w-full bg-orange-500 hover:bg-red-500 text-white py-3 px-4 rounded-lg font-semibold transition-colors mt-4 ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
                             >
-                                Finalizar Pedido
+                                {isLoading ? 'Finalizando...' : 'Finalizar Pedido'}
                             </button>
                         )}
                     </>

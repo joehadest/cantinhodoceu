@@ -5,71 +5,68 @@ import CategoryForm from '@/components/admin/CategoryForm';
 import MenuItemForm from '@/components/admin/MenuItemForm';
 import Cookies from 'js-cookie';
 import { useRouter } from 'next/navigation';
-import { useStore } from '@/contexts/StoreContext';
 import { motion, AnimatePresence } from 'framer-motion';
+import RecentOrders from '../../components/RecentOrders';
 
 export default function AdminPanel() {
     const [categories, setCategories] = useState<Category[]>([]);
     const [items, setItems] = useState<MenuItem[]>([]);
-    const { isOpen, toggleStatus } = useStore();
+    const [isOpen, setIsOpen] = useState(true);
     const router = useRouter();
     const [isSaving, setIsSaving] = useState(false);
     const [saveMessage, setSaveMessage] = useState('');
-    const [deliveryFee, setDeliveryFee] = useState(() => {
-        if (typeof window !== 'undefined') {
-            const saved = localStorage.getItem('deliveryFee');
-            return saved ? parseFloat(saved) : 5.0;
-        }
-        return 5.0;
-    });
+    const [deliveryFee, setDeliveryFee] = useState(5.0);
     const [activeTab, setActiveTab] = useState<'admin' | 'pedidos'>('admin');
     const [pedidoSelecionado, setPedidoSelecionado] = useState<any | null>(null);
 
+    // Buscar configurações do banco ao carregar
     useEffect(() => {
-        // Carregar dados salvos ao iniciar
-        const savedCategories = Cookies.get('categories');
-        const savedItems = Cookies.get('items');
-
-        if (savedCategories) {
-            setCategories(JSON.parse(savedCategories));
+        async function fetchSettings() {
+            try {
+                const res = await fetch('/api/settings');
+                const data = await res.json();
+                if (data.success && data.data) {
+                    setCategories(data.data.categories || []);
+                    setItems(data.data.items || []);
+                    setDeliveryFee(data.data.deliveryFee ?? 5.0);
+                }
+            } catch (err) {
+                setSaveMessage('Erro ao carregar configurações do banco.');
+            }
         }
-        if (savedItems) {
-            setItems(JSON.parse(savedItems));
-        }
+        fetchSettings();
     }, []);
 
-    useEffect(() => {
-        if (typeof window !== 'undefined') {
-            localStorage.setItem('deliveryFee', deliveryFee.toString());
-        }
-    }, [deliveryFee]);
-
-    const handleSave = () => {
+    const handleSave = async () => {
         setIsSaving(true);
         setSaveMessage('');
-
         try {
-            // Salvar status do estabelecimento
-            Cookies.set('storeStatus', isOpen ? 'open' : 'closed', { expires: 365 });
-
-            // Salvar categorias
-            Cookies.set('categories', JSON.stringify(categories), { expires: 365 });
-
-            // Salvar itens
-            Cookies.set('items', JSON.stringify(items), { expires: 365 });
-
-            setSaveMessage('Alterações salvas com sucesso!');
+            const res = await fetch('/api/settings', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    isOpen,
+                    deliveryFee,
+                    categories,
+                    items
+                })
+            });
+            const data = await res.json();
+            if (data.success) {
+                setSaveMessage('Alterações salvas com sucesso!');
+            } else {
+                setSaveMessage('Erro ao salvar alterações.');
+            }
         } catch (error) {
             setSaveMessage('Erro ao salvar alterações.');
         } finally {
             setIsSaving(false);
-            // Limpar mensagem após 3 segundos
             setTimeout(() => setSaveMessage(''), 3000);
         }
     };
 
     const handleLogout = () => {
-        Cookies.remove('isAuthenticated');
+        // Cookies.remove('isAuthenticated');
         router.push('/admin/login');
     };
 
@@ -106,12 +103,35 @@ export default function AdminPanel() {
         );
     };
 
-    // Exemplo de pedidos recentes simulados
-    const pedidosRecentes = [
-        { id: '1', cliente: 'João', total: 59.90, status: 'Entregue', horario: '12:30' },
-        { id: '2', cliente: 'Maria', total: 42.50, status: 'Em preparo', horario: '13:10' },
-        { id: '3', cliente: 'Carlos', total: 28.00, status: 'Aguardando', horario: '13:45' },
-    ];
+    const handleToggleStatus = async () => {
+        setIsOpen((prev) => !prev);
+        // Salvar imediatamente no banco
+        setIsSaving(true);
+        setSaveMessage('');
+        try {
+            const res = await fetch('/api/settings', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    isOpen: !isOpen, // novo valor
+                    deliveryFee,
+                    categories,
+                    items
+                })
+            });
+            const data = await res.json();
+            if (data.success) {
+                setSaveMessage('Status alterado com sucesso!');
+            } else {
+                setSaveMessage('Erro ao alterar status.');
+            }
+        } catch (error) {
+            setSaveMessage('Erro ao alterar status.');
+        } finally {
+            setIsSaving(false);
+            setTimeout(() => setSaveMessage(''), 3000);
+        }
+    };
 
     return (
         <motion.main
@@ -151,7 +171,7 @@ export default function AdminPanel() {
                                 <motion.button
                                     whileHover={{ scale: 1.05 }}
                                     whileTap={{ scale: 0.95 }}
-                                    onClick={toggleStatus}
+                                    onClick={handleToggleStatus}
                                     className={`flex items-center px-4 py-2 rounded-lg text-sm font-medium ${isOpen
                                         ? 'bg-yellow-100 text-orange-700'
                                         : 'bg-gray-200 text-gray-500'
@@ -346,166 +366,7 @@ export default function AdminPanel() {
                     </>
                 ) : (
                     <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-yellow-400">
-                        <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-yellow-600">Pedidos Recentes</h2>
-                        <div className="overflow-x-auto">
-                            <table className="min-w-full text-sm">
-                                <thead>
-                                    <tr className="bg-yellow-100 text-orange-700">
-                                        <th className="px-4 py-2 text-left">Cliente</th>
-                                        <th className="px-4 py-2 text-left">Total</th>
-                                        <th className="px-4 py-2 text-left">Status</th>
-                                        <th className="px-4 py-2 text-left">Horário</th>
-                                        <th className="px-4 py-2 text-left">Ações</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {pedidosRecentes.map((pedido) => (
-                                        <tr key={pedido.id} className="border-b last:border-b-0">
-                                            <td className="px-4 py-2 font-medium">{pedido.cliente}</td>
-                                            <td className="px-4 py-2">R$ {pedido.total.toFixed(2)}</td>
-                                            <td className="px-4 py-2">
-                                                <span className={`px-2 py-1 rounded text-xs font-semibold ${pedido.status === 'Entregue' ? 'bg-orange-100 text-orange-700' : pedido.status === 'Em preparo' ? 'bg-yellow-200 text-yellow-800' : 'bg-gray-200 text-gray-600'}`}>{pedido.status}</span>
-                                            </td>
-                                            <td className="px-4 py-2">{pedido.horario}</td>
-                                            <td className="px-4 py-2">
-                                                <button
-                                                    className="px-3 py-1 rounded bg-orange-500 text-white font-semibold hover:bg-orange-600 transition-colors mr-2"
-                                                    onClick={() => setPedidoSelecionado(pedido)}
-                                                >
-                                                    Ver Detalhes
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                        {/* Modal de detalhes do pedido */}
-                        {pedidoSelecionado && (
-                            <motion.div 
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                exit={{ opacity: 0 }}
-                                transition={{ duration: 0.2 }}
-                                className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40" 
-                                onClick={() => setPedidoSelecionado(null)}
-                            >
-                                <motion.div 
-                                    initial={{ y: 20, opacity: 0 }}
-                                    animate={{ y: 0, opacity: 1 }}
-                                    exit={{ y: 20, opacity: 0 }}
-                                    transition={{ 
-                                        type: "spring",
-                                        stiffness: 300,
-                                        damping: 25
-                                    }}
-                                    className="bg-white rounded-xl shadow-xl p-4 sm:p-8 max-w-md w-[95%] sm:w-full relative print-pedido max-h-[90vh] overflow-y-auto" 
-                                    onClick={e => e.stopPropagation()}
-                                >
-                                    <motion.button
-                                        whileHover={{ scale: 1.1 }}
-                                        whileTap={{ scale: 0.9 }}
-                                        className="absolute top-2 right-2 text-orange-500 hover:text-orange-700 text-2xl focus:outline-none no-print"
-                                        onClick={() => setPedidoSelecionado(null)}
-                                        aria-label="Fechar modal de pedido"
-                                    >
-                                        &times;
-                                    </motion.button>
-                                    <div className="sticky top-0 bg-white pb-4 z-10">
-                                        <h2 className="text-lg sm:text-xl font-bold mb-2 text-orange-600">Detalhes do Pedido</h2>
-                                    </div>
-                                    <div className="mb-4 space-y-2 text-sm sm:text-base">
-                                        <motion.div 
-                                            initial={{ opacity: 0, y: 10 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            transition={{ delay: 0.1 }}
-                                            className="border-b pb-2"
-                                        >
-                                            <h3 className="font-bold text-orange-600 mb-1 text-sm sm:text-base">Informações do Cliente</h3>
-                                            <div><span className="font-semibold">Cliente:</span> {pedidoSelecionado.cliente}</div>
-                                            <div><span className="font-semibold">Telefone:</span> {pedidoSelecionado.telefone || '(11) 99999-9999'}</div>
-                                        </motion.div>
-
-                                        <motion.div 
-                                            initial={{ opacity: 0, y: 10 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            transition={{ delay: 0.2 }}
-                                            className="border-b pb-2"
-                                        >
-                                            <h3 className="font-bold text-orange-600 mb-1 text-sm sm:text-base">Endereço de Entrega</h3>
-                                            <div><span className="font-semibold">Rua:</span> {pedidoSelecionado.endereco?.rua || 'Rua Exemplo, 123'}</div>
-                                            <div><span className="font-semibold">Bairro:</span> {pedidoSelecionado.endereco?.bairro || 'Centro'}</div>
-                                            <div><span className="font-semibold">Complemento:</span> {pedidoSelecionado.endereco?.complemento || 'Apto 45'}</div>
-                                            <div><span className="font-semibold">Referência:</span> {pedidoSelecionado.endereco?.referencia || 'Próximo ao mercado'}</div>
-                                        </motion.div>
-
-                                        <motion.div 
-                                            initial={{ opacity: 0, y: 10 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            transition={{ delay: 0.3 }}
-                                            className="border-b pb-2"
-                                        >
-                                            <h3 className="font-bold text-orange-600 mb-1 text-sm sm:text-base">Itens do Pedido</h3>
-                                            {pedidoSelecionado.itens?.map((item: any, index: number) => (
-                                                <motion.div 
-                                                    key={index}
-                                                    initial={{ opacity: 0, x: -10 }}
-                                                    animate={{ opacity: 1, x: 0 }}
-                                                    transition={{ delay: 0.4 + (index * 0.1) }}
-                                                    className="flex justify-between text-sm"
-                                                >
-                                                    <span>{item.quantidade}x {item.nome}</span>
-                                                    <span>R$ {item.preco.toFixed(2)}</span>
-                                                </motion.div>
-                                            )) || (
-                                                <motion.div 
-                                                    initial={{ opacity: 0, x: -10 }}
-                                                    animate={{ opacity: 1, x: 0 }}
-                                                    transition={{ delay: 0.4 }}
-                                                    className="text-sm"
-                                                >
-                                                    <div>1x Pizza Margherita - R$ 45,90</div>
-                                                    <div>2x Coca-Cola 350ml - R$ 7,00</div>
-                                                </motion.div>
-                                            )}
-                                        </motion.div>
-
-                                        <motion.div 
-                                            initial={{ opacity: 0, y: 10 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            transition={{ delay: 0.5 }}
-                                            className="border-b pb-2"
-                                        >
-                                            <h3 className="font-bold text-orange-600 mb-1 text-sm sm:text-base">Valores</h3>
-                                            <div className="flex justify-between"><span>Subtotal:</span> <span>R$ {(pedidoSelecionado.total - deliveryFee).toFixed(2)}</span></div>
-                                            <div className="flex justify-between"><span>Taxa de Entrega:</span> <span>R$ {deliveryFee.toFixed(2)}</span></div>
-                                            <div className="flex justify-between font-bold"><span>Total:</span> <span>R$ {pedidoSelecionado.total.toFixed(2)}</span></div>
-                                        </motion.div>
-
-                                        <motion.div 
-                                            initial={{ opacity: 0, y: 10 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            transition={{ delay: 0.6 }}
-                                            className="border-b pb-2"
-                                        >
-                                            <h3 className="font-bold text-orange-600 mb-1 text-sm sm:text-base">Informações do Pedido</h3>
-                                            <div><span className="font-semibold">Status:</span> {pedidoSelecionado.status}</div>
-                                            <div><span className="font-semibold">Horário:</span> {pedidoSelecionado.horario}</div>
-                                            <div><span className="font-semibold">Forma de Pagamento:</span> {pedidoSelecionado.formaPagamento || 'Dinheiro'}</div>
-                                            <div><span className="font-semibold">Observações:</span> {pedidoSelecionado.observacoes || 'Sem observações'}</div>
-                                        </motion.div>
-                                    </div>
-                                    <motion.button
-                                        whileHover={{ scale: 1.02 }}
-                                        whileTap={{ scale: 0.98 }}
-                                        className="w-full bg-yellow-400 hover:bg-yellow-500 text-orange-900 font-bold py-2 rounded-lg transition-colors no-print"
-                                        onClick={() => window.print()}
-                                    >
-                                        Imprimir
-                                    </motion.button>
-                                </motion.div>
-                            </motion.div>
-                        )}
+                        <RecentOrders />
                     </div>
                 )}
             </div>

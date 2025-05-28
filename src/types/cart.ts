@@ -13,6 +13,7 @@ export interface Address {
 export interface CartItem {
     item: MenuItem;
     quantity: number;
+    observations?: string;
 }
 
 export interface DeliveryInfo {

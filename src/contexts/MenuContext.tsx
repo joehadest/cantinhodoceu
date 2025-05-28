@@ -23,20 +23,22 @@ export function MenuProvider({ children }: { children: React.ReactNode }) {
     const [items, setItems] = useState<MenuItem[]>([]);
 
     useEffect(() => {
-        // Carregar dados salvos ao iniciar
-        const savedCategories = Cookies.get('categories');
-        const savedItems = Cookies.get('items');
+        // Limpar cookies existentes para garantir dados frescos
+        Cookies.remove('categories');
+        Cookies.remove('items');
 
-        if (savedCategories) {
-            setCategories(JSON.parse(savedCategories));
-        } else {
-            setCategories(menuData.categories);
-        }
-        if (savedItems) {
-            setItems(JSON.parse(savedItems));
-        } else {
-            setItems(menuData.items);
-        }
+        // Definir dados iniciais
+        setCategories(menuData.categories);
+        setItems(menuData.items);
+
+        // Salvar no cookie
+        Cookies.set('categories', JSON.stringify(menuData.categories));
+        Cookies.set('items', JSON.stringify(menuData.items));
+
+        console.log('MenuProvider - Dados iniciais carregados:', {
+            categories: menuData.categories,
+            items: menuData.items
+        });
     }, []);
 
     const updateCategories = (newCategories: Category[]) => {

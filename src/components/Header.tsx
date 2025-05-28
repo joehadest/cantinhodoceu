@@ -1,13 +1,28 @@
 'use client';
-import React, { useState } from 'react';
-import { useStore } from '@/contexts/StoreContext';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FaPizzaSlice, FaExclamationCircle } from 'react-icons/fa';
 import Image from 'next/image';
 
 export default function Header() {
-    const { isOpen } = useStore();
+    const [isOpen, setIsOpen] = useState(true);
     const [showAddress, setShowAddress] = useState(false);
+
+    // Buscar status do restaurante ao carregar
+    useEffect(() => {
+        async function fetchStatus() {
+            try {
+                const res = await fetch('/api/settings');
+                const data = await res.json();
+                if (data.success && data.data) {
+                    setIsOpen(data.data.isOpen ?? true);
+                }
+            } catch (err) {
+                setIsOpen(true); // fallback: aberto
+            }
+        }
+        fetchStatus();
+    }, []);
 
     return (
         <motion.header
@@ -68,7 +83,7 @@ export default function Header() {
                             <motion.span
                                 className="mr-2"
                                 animate={{
-                                    rotate: isOpen ? 0 : 180,
+                                    rotate: 0,
                                     scale: isOpen ? 1 : 0.8
                                 }}
                                 transition={{ type: "spring", stiffness: 200 }}
