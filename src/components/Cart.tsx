@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import type { Cart, CartItem, Address } from '@/types/cart';
 import { motion, AnimatePresence } from 'framer-motion';
+import InputMask from 'react-input-mask';
 
 interface CartProps {
     cart: Cart;
@@ -25,6 +26,8 @@ export default function Cart({ cart, onUpdateQuantity, onRemoveItem, onUpdateAdd
     });
     const [deliveryFee, setDeliveryFee] = useState(0);
     const [mensagem, setMensagem] = useState<string | null>(null);
+    const [mensagemSucesso, setMensagemSucesso] = useState<string | null>(null);
+    const [mensagemErro, setMensagemErro] = useState<string | null>(null);
     const [cliente, setCliente] = useState({ nome: '', telefone: '' });
     const [formaPagamento, setFormaPagamento] = useState('');
     const [observacoes, setObservacoes] = useState('');
@@ -194,13 +197,20 @@ export default function Cart({ cart, onUpdateQuantity, onRemoveItem, onUpdateAdd
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-orange-700">Telefone</label>
-                                <input
-                                    type="tel"
+                                <InputMask
+                                    mask="(99) 99999-9999"
                                     value={cliente.telefone}
                                     onChange={e => setCliente({ ...cliente, telefone: e.target.value })}
-                                    className="mt-1 block w-full rounded-md border-yellow-400 shadow-sm focus:border-orange-500 focus:ring-orange-500 bg-yellow-50 text-gray-900"
-                                    required
-                                />
+                                    >
+                                    {(inputProps) => (
+                                        <input
+                                        {...inputProps}
+                                        type="tel"
+                                        className="mt-1 block w-full rounded-md border-yellow-400 shadow-sm focus:border-orange-500 focus:ring-orange-500 bg-yellow-50 text-gray-900"
+                                        required
+                                        />
+                                    )}
+                                </InputMask>
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-orange-700">Forma de Pagamento</label>
@@ -230,12 +240,16 @@ export default function Cart({ cart, onUpdateQuantity, onRemoveItem, onUpdateAdd
                         </div>
 
                         {/* Mensagem de sucesso/erro */}
-                        {mensagem && (
+                         {mensagemSucesso && (
                             <div className="mb-4 p-4 rounded-lg bg-green-100 border border-green-300 text-green-800 text-center font-semibold shadow">
-                                {mensagem}
+                                {mensagemSucesso}
                             </div>
                         )}
-
+                        {mensagemErro && (
+                            <div className="mb-4 p-4 rounded-lg bg-red-100 border border-red-300 text-red-800 text-center font-semibold shadow">
+                                {mensagemErro}
+                            </div>
+                        )}
                         {!cart.deliveryInfo ? (
                             <button
                                 onClick={() => setIsAddressFormOpen(true)}

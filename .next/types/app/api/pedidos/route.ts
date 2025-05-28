@@ -1,4 +1,4 @@
-// File: C:\Users\kaued\OneDrive\Documentos\Pappardele\cantinhodoceu\src\app\api\pedidos\route.js
+// File: C:\Users\60918958342\Desktop\projetos Nicolas Rock\cantinhodoceu\src\app\api\pedidos\route.js
 import * as entry from '../../../../../src/app/api/pedidos/route.js'
 import type { NextRequest } from 'next/server.js'
 

@@ -1,5 +1,6 @@
 {
-  "/api/pedidos/route": "app/api/pedidos/route.js",
-  "/api/settings/route": "app/api/settings/route.js",
-  "/admin/page": "app/admin/page.js"
+  "/page": "app/page.js",
+  "/admin/login/page": "app/admin/login/page.js",
+  "/admin/page": "app/admin/page.js",
+  "/api/pedidos/route": "app/api/pedidos/route.js"
 }
